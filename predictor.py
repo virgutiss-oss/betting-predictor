@@ -10,10 +10,8 @@ class BettingPredictor:
         stats = {team: {"games": 0, "points": 0} for team in self.teams}
 
         for _, row in self.data.iterrows():
-            home = row["home"]
-            away = row["away"]
-            hg = row["home_goals"]
-            ag = row["away_goals"]
+            home, away = row["home"], row["away"]
+            hg, ag = row["home_goals"], row["away_goals"]
 
             stats[home]["games"] += 1
             stats[away]["games"] += 1
@@ -29,12 +27,13 @@ class BettingPredictor:
         return stats
 
     def predict(self, home, away, odds):
-        home_strength = self.stats[home]["points"] / self.stats[home]["games"]
-        away_strength = self.stats[away]["points"] / self.stats[away]["games"]
+        # +1 smoothing
+        hs = (self.stats[home]["points"] + 1) / (self.stats[home]["games"] + 1)
+        as_ = (self.stats[away]["points"] + 1) / (self.stats[away]["games"] + 1)
 
-        total = home_strength + away_strength
-        home_prob = home_strength / total
-        away_prob = away_strength / total
+        total = hs + as_
+        home_prob = hs / total
+        away_prob = as_ / total
 
         return {
             "home_prob": round(home_prob, 2),
