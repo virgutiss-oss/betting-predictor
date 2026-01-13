@@ -5,31 +5,60 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    df = pd.read_csv("matches.csv")
+    try:
+        df = pd.read_csv("matches.csv")
 
-    predictions = []
+        required_cols = {"home", "away", "home_goals", "away_goals"}
+        if not required_cols.issubset(df.columns):
+            return f"CSV columns error. Found: {list(df.columns)}"
 
-    for _, row in df.iterrows():
-        home_prob = round(1 / row["home_odds"], 2)
-        away_prob = round(1 / row["away_odds"], 2)
+        teams = pd.unique(df[['home', 'away']].values.ravel())
+        stats = {}
 
-        total = home_prob + away_prob
-        home_prob = round(home_prob / total, 2)
-        away_prob = round(away_prob / total, 2)
+        for team in teams:
+            home_games = df[df['home'] == team]
+            away_games = df[df['away'] == team]
 
-        home_value = home_prob * row["home_odds"] > 1
-        away_value = away_prob * row["away_odds"] > 1
+            goals_for = home_games['home_goals'].sum() + away_games['away_goals'].sum()
+            goals_against = home_games['away_goals'].sum() + away_games['home_goals'].sum()
+            games = len(home_games) + len(away_games)
 
-        predictions.append({
-            "home_team": row["home_team"],
-            "away_team": row["away_team"],
-            "home_prob": home_prob,
-            "away_prob": away_prob,
-            "home_value": home_value,
-            "away_value": away_value
-        })
+            if games == 0:
+                continue
 
-    return render_template("index.html", predictions=predictions)
+            stats[team] = {
+                "avg_for": goals_for / games,
+                "avg_against": goals_against / games
+            }
+
+        predictions = []
+
+        teams = list(stats.keys())
+        for i in range(len(teams)):
+            for j in range(i + 1, len(teams)):
+                home = teams[i]
+                away = teams[j]
+
+                home_strength = stats[home]["avg_for"]
+                away_strength = stats[away]["avg_for"]
+
+                total = home_strength + away_strength
+                home_prob = round(home_strength / total, 2)
+                away_prob = round(away_strength / total, 2)
+
+                predictions.append({
+                    "home_team": home,
+                    "away_team": away,
+                    "home_prob": home_prob,
+                    "away_prob": away_prob,
+                    "home_value": home_prob > 0.5,
+                    "away_value": away_prob > 0.5
+                })
+
+        return render_template("index.html", predictions=predictions)
+
+    except Exception as e:
+        return f"ERROR: {e}"
 
 if __name__ == "__main__":
     import os
