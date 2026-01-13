@@ -9,24 +9,27 @@
             font-family: Arial;
             background: #0f172a;
             color: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #020617;
             padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
         }
         h1 {
             text-align: center;
-        }
-        .match {
-            background: #020617;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-        }
-        .teams {
-            font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         .row {
             display: flex;
             justify-content: space-between;
+            margin: 10px 0;
         }
         .true {
             color: #22c55e;
@@ -37,51 +40,45 @@
         }
         footer {
             text-align: center;
-            margin-top: 20px;
             font-size: 12px;
-            opacity: 0.5;
+            opacity: 0.6;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-<h1>⚽ Betting Predictor</h1>
+<div class="card">
+    <h1>⚽ Betting Predictor</h1>
 
-{% for match in predictions %}
-<div class="match">
-    <div class="teams">
-        {{ match.home_team }} vs {{ match.away_team }}
+    <div class="row">
+        <span>Home win probability</span>
+        <span>{{ home_prob }}</span>
     </div>
 
     <div class="row">
-        <span>Home win %</span>
-        <span>{{ match.home_prob }}</span>
-    </div>
-
-    <div class="row">
-        <span>Away win %</span>
-        <span>{{ match.away_prob }}</span>
+        <span>Away win probability</span>
+        <span>{{ away_prob }}</span>
     </div>
 
     <div class="row">
         <span>Home value</span>
-        <span class="{{ 'true' if match.home_value else 'false' }}">
-            {{ match.home_value }}
+        <span class="{{ 'true' if home_value else 'false' }}">
+            {{ home_value }}
         </span>
     </div>
 
     <div class="row">
         <span>Away value</span>
-        <span class="{{ 'true' if match.away_value else 'false' }}">
-            {{ match.away_value }}
+        <span class="{{ 'true' if away_value else 'false' }}">
+            {{ away_value }}
         </span>
     </div>
-</div>
-{% endfor %}
 
-<footer>
-    Powered by virgutiss-oss
-</footer>
+    <footer>
+        Powered by virgutiss-oss
+    </footer>
+</div>
 
 </body>
 </html>
