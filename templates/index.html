@@ -1,84 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>⚽ Betting Predictor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial;
             background: #0f172a;
-            color: #e5e7eb;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: #020617;
-            padding: 20px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
+            color: white;
+            font-family: Arial, sans-serif;
             text-align: center;
-            margin-bottom: 20px;
+            padding: 40px;
         }
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
         }
-        .true {
+        .box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .value {
             color: #22c55e;
             font-weight: bold;
-        }
-        .false {
-            color: #ef4444;
-        }
-        footer {
-            text-align: center;
-            font-size: 12px;
-            opacity: 0.6;
-            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>⚽ Betting Predictor</h1>
+<h1>⚽ Betting Predictor</h1>
 
-    <div class="row">
-        <span>Home win probability</span>
-        <span>{{ home_prob }}</span>
-    </div>
+<form method="post">
+    <select name="home" required>
+        <option value="">Home team</option>
+        {% for team in teams %}
+            <option value="{{ team }}" {% if team == selected_home %}selected{% endif %}>
+                {{ team }}
+            </option>
+        {% endfor %}
+    </select>
 
-    <div class="row">
-        <span>Away win probability</span>
-        <span>{{ away_prob }}</span>
-    </div>
+    <select name="away" required>
+        <option value="">Away team</option>
+        {% for team in teams %}
+            <option value="{{ team }}" {% if team == selected_away %}selected{% endif %}>
+                {{ team }}
+            </option>
+        {% endfor %}
+    </select>
 
-    <div class="row">
-        <span>Home value</span>
-        <span class="{{ 'true' if home_value else 'false' }}">
-            {{ home_value }}
-        </span>
-    </div>
+    <br>
+    <button type="submit">Predict</button>
+</form>
 
-    <div class="row">
-        <span>Away value</span>
-        <span class="{{ 'true' if away_value else 'false' }}">
-            {{ away_value }}
-        </span>
-    </div>
+{% if home_prob is not none %}
+<div class="box">
+    <p>Home win probability: <b>{{ home_prob }}</b></p>
+    <p>Away win probability: <b>{{ away_prob }}</b></p>
 
-    <footer>
-        Powered by virgutiss-oss
-    </footer>
+    <p>Home value: <span class="value">{{ home_value }}</span></p>
+    <p>Away value: <span class="value">{{ away_value }}</span></p>
 </div>
+{% endif %}
+
+<p style="margin-top:40px;font-size:14px;">
+    Powered by <b>virgutiss-oss</b>
+</p>
 
 </body>
 </html>
