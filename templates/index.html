@@ -1,88 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>⚽ Betting Predictor</title>
-    <style>
-        body {
-            background: #0f172a;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 40px;
-        }
-        select, button, input[type=file] {
-            padding: 10px;
-            margin: 8px;
-            font-size: 16px;
-        }
-        .box {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        .value {
-            color: #22c55e;
-            font-weight: bold;
-        }
-        .upload {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #334155;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Betting Predictor</title>
+  <style>
+    body {
+      background: #0b1220;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      background: #1e90ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
 
 <h1>⚽ Betting Predictor</h1>
 
-<form method="post">
-    <select name="home" required>
-        <option value="">Home team</option>
-        {% for team in teams %}
-            <option value="{{ team }}" {% if team == selected_home %}selected{% endif %}>
-                {{ team }}
-            </option>
-        {% endfor %}
-    </select>
+<select id="home">
+  {% for team in teams %}
+  <option value="{{ team }}">{{ team }}</option>
+  {% endfor %}
+</select>
 
-    <select name="away" required>
-        <option value="">Away team</option>
-        {% for team in teams %}
-            <option value="{{ team }}" {% if team == selected_away %}selected{% endif %}>
-                {{ team }}
-            </option>
-        {% endfor %}
-    </select>
+<select id="away">
+  {% for team in teams %}
+  <option value="{{ team }}">{{ team }}</option>
+  {% endfor %}
+</select>
 
-    <br>
-    <button type="submit">Predict</button>
+<br>
+<button onclick="predict()">Predict</button>
+
+<div class="result" id="result"></div>
+
+<hr style="margin:40px">
+
+<h3>📁 Upload new matches.csv</h3>
+<form method="POST" action="/upload" enctype="multipart/form-data">
+  <input type="file" name="file">
+  <br><br>
+  <button type="submit">Upload CSV</button>
 </form>
 
-{% if home_prob is not none %}
-<div class="box">
-    <p>Home win probability: <b>{{ home_prob }}</b></p>
-    <p>Away win probability: <b>{{ away_prob }}</b></p>
+<p style="margin-top:40px">Powered by <b>virgutiss-oss</b></p>
 
-    <p>Home value: <span class="value">{{ home_value }}</span></p>
-    <p>Away value: <span class="value">{{ away_value }}</span></p>
-</div>
-{% endif %}
+<script>
+function predict() {
+  const home = document.getElementById("home").value;
+  const away = document.getElementById("away").value;
 
-<div class="upload">
-    <h3>📁 Upload new matches.csv</h3>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".csv" required>
-        <br>
-        <button type="submit">Upload CSV</button>
-    </form>
-</div>
-
-<p style="margin-top:40px;font-size:14px;">
-    Powered by <b>virgutiss-oss</b>
-</p>
+  fetch(`/api/predict?home=${home}&away=${away}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("result").innerHTML = `
+        <p>🏠 Home win probability: <b>${(data.home_win_probability * 100).toFixed(1)}%</b></p>
+        <p>✈️ Away win probability: <b>${(data.away_win_probability * 100).toFixed(1)}%</b></p>
+        <p>💰 Home value: <b>${data.home_value}</b></p>
+        <p>💰 Away value: <b>${data.away_value}</b></p>
+      `;
+    })
+    .catch(err => {
+      document.getElementById("result").innerText = "Error loading prediction";
+    });
+}
+</script>
 
 </body>
 </html>
