@@ -1,87 +1,50 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import os
 
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(__file__)
-DATA_PATH = os.path.join(BASE_DIR, "matches.csv")
-ALLOWED_EXTENSIONS = {"csv"}
+CSV_PATH = "matches.csv"
 
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+def load_matches():
+    if not os.path.exists(CSV_PATH):
+        raise FileNotFoundError("matches.csv not found")
+
+    df = pd.read_csv(CSV_PATH)
+
+    required = {"home", "away", "home_goals", "away_goals"}
+    if not required.issubset(df.columns):
+        raise ValueError("CSV columns invalid")
+
+    return df
 
 
-def get_teams(df):
-    return sorted(set(df["home"]).union(set(df["away"])))
+def predict_match(home, away):
+    df = load_matches()
+
+    home_games = df[df["home"] == home]
+    away_games = df[df["away"] == away]
+
+    home_wins = (home_games["home_goals"] > home_games["away_goals"]).sum()
+    away_wins = (away_games["away_goals"] > away_games["home_goals"]).sum()
+
+    total = max(len(home_games) + len(away_games), 1)
+
+    home_prob = round(home_wins / total, 2)
+    away_prob = round(away_wins / total, 2)
+
+    return {
+        "home_win_probability": home_prob,
+        "away_win_probability": away_prob,
+        "home_value": home_prob > 0.5,
+        "away_value": away_prob > 0.5
+    }
 
 
-def calculate_probabilities(df, home, away):
-    filtered = df[
-        ((df["home"] == home) & (df["away"] == away)) |
-        ((df["home"] == away) & (df["away"] == home))
-    ]
-
-    if len(filtered) == 0:
-        return 0.0, 0.0
-
-    home_wins = (
-        ((filtered["home"] == home) & (filtered["home_goals"] > filtered["away_goals"])).sum()
-        + ((filtered["away"] == home) & (filtered["away_goals"] > filtered["home_goals"])).sum()
-    )
-
-    away_wins = (
-        ((filtered["home"] == away) & (filtered["home_goals"] > filtered["away_goals"])).sum()
-        + ((filtered["away"] == away) & (filtered["away_goals"] > filtered["home_goals"])).sum()
-    )
-
-    total = len(filtered)
-    return round(home_wins / total, 2), round(away_wins / total, 2)
-
-
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    df = pd.read_csv(DATA_PATH)
-    teams = get_teams(df)
-
-    home_prob = away_prob = None
-    home_value = away_value = None
-    selected_home = selected_away = None
-
-    if request.method == "POST" and "home" in request.form:
-        selected_home = request.form["home"]
-        selected_away = request.form["away"]
-
-        home_prob, away_prob = calculate_probabilities(df, selected_home, selected_away)
-        home_value = home_prob > 0.5
-        away_value = away_prob > 0.5
-
-    return render_template(
-        "index.html",
-        teams=teams,
-        home_prob=home_prob,
-        away_prob=away_prob,
-        home_value=home_value,
-        away_value=away_value,
-        selected_home=selected_home,
-        selected_away=selected_away
-    )
-
-
-@app.route("/upload", methods=["POST"])
-def upload():
-    if "file" not in request.files:
-        return redirect(url_for("index"))
-
-    file = request.files["file"]
-    if file.filename == "":
-        return redirect(url_for("index"))
-
-    if file and allowed_file(file.filename):
-        file.save(DATA_PATH)
-
-    return redirect(url_for("index"))
+    return render_template("index.html")
 
 
 @app.route("/api/predict")
@@ -90,21 +53,14 @@ def api_predict():
     away = request.args.get("away")
 
     if not home or not away:
-        return jsonify({"error": "Missing home or away parameter"}), 400
+        return jsonify({"error": "Missing parameters"}), 400
 
-    df = pd.read_csv(DATA_PATH)
-    home_prob, away_prob = calculate_probabilities(df, home, away)
-
-    return jsonify({
-        "home": home,
-        "away": away,
-        "home_win_probability": home_prob,
-        "away_win_probability": away_prob,
-        "home_value": home_prob > 0.5,
-        "away_value": away_prob > 0.5
-    })
+    try:
+        result = predict_match(home, away)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
