@@ -11,9 +11,9 @@
             text-align: center;
             padding: 40px;
         }
-        select, button {
+        select, button, input[type=file] {
             padding: 10px;
-            margin: 10px;
+            margin: 8px;
             font-size: 16px;
         }
         .box {
@@ -26,6 +26,11 @@
         .value {
             color: #22c55e;
             font-weight: bold;
+        }
+        .upload {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
         }
     </style>
 </head>
@@ -65,6 +70,15 @@
     <p>Away value: <span class="value">{{ away_value }}</span></p>
 </div>
 {% endif %}
+
+<div class="upload">
+    <h3>📁 Upload new matches.csv</h3>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <br>
+        <button type="submit">Upload CSV</button>
+    </form>
+</div>
 
 <p style="margin-top:40px;font-size:14px;">
     Powered by <b>virgutiss-oss</b>
