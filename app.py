@@ -23,16 +23,53 @@ def load_matches():
 def predict_match(home, away):
     df = load_matches()
 
-    home_games = df[df["home"] == home]
-    away_games = df[df["away"] == away]
+    # ===== OVERALL FORM =====
+    home_games = df[(df["home"] == home) | (df["away"] == home)]
+    away_games = df[(df["home"] == away) | (df["away"] == away)]
 
-    home_wins = (home_games["home_goals"] > home_games["away_goals"]).sum()
-    away_wins = (away_games["away_goals"] > away_games["home_goals"]).sum()
+    home_wins = (
+        ((home_games["home"] == home) & (home_games["home_goals"] > home_games["away_goals"])) |
+        ((home_games["away"] == home) & (home_games["away_goals"] > home_games["home_goals"]))
+    ).sum()
 
-    total = max(len(home_games) + len(away_games), 1)
+    away_wins = (
+        ((away_games["home"] == away) & (away_games["home_goals"] > away_games["away_goals"])) |
+        ((away_games["away"] == away) & (away_games["away_goals"] > away_games["home_goals"]))
+    ).sum()
 
-    home_prob = round(home_wins / total, 2)
-    away_prob = round(away_wins / total, 2)
+    home_form = home_wins / max(len(home_games), 1)
+    away_form = away_wins / max(len(away_games), 1)
+
+    # ===== HEAD TO HEAD =====
+    h2h = df[
+        ((df["home"] == home) & (df["away"] == away)) |
+        ((df["home"] == away) & (df["away"] == home))
+    ]
+
+    if len(h2h) > 0:
+        home_h2h_wins = (
+            ((h2h["home"] == home) & (h2h["home_goals"] > h2h["away_goals"])) |
+            ((h2h["away"] == home) & (h2h["away_goals"] > h2h["home_goals"]))
+        ).sum()
+
+        away_h2h_wins = (
+            ((h2h["home"] == away) & (h2h["home_goals"] > h2h["away_goals"])) |
+            ((h2h["away"] == away) & (h2h["away_goals"] > h2h["home_goals"]))
+        ).sum()
+
+        home_h2h = home_h2h_wins / len(h2h)
+        away_h2h = away_h2h_wins / len(h2h)
+    else:
+        home_h2h = None
+        away_h2h = None
+
+    # ===== WEIGHTED COMBINATION =====
+    if home_h2h is not None:
+        home_prob = round(0.7 * home_form + 0.3 * home_h2h, 2)
+        away_prob = round(0.7 * away_form + 0.3 * away_h2h, 2)
+    else:
+        home_prob = round(home_form, 2)
+        away_prob = round(away_form, 2)
 
     return {
         "home_win_probability": home_prob,
@@ -44,7 +81,9 @@ def predict_match(home, away):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    df = load_matches()
+    teams = sorted(set(df["home"]).union(set(df["away"])))
+    return render_template("index.html", teams=teams)
 
 
 @app.route("/api/predict")
