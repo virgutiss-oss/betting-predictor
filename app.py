@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import os
 
@@ -6,14 +6,16 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE_DIR, "matches.csv")
-UPLOAD_FOLDER = BASE_DIR
 ALLOWED_EXTENSIONS = {"csv"}
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def get_teams(df):
     return sorted(set(df["home"]).union(set(df["away"])))
+
 
 def calculate_probabilities(df, home, away):
     filtered = df[
@@ -36,6 +38,7 @@ def calculate_probabilities(df, home, away):
 
     total = len(filtered)
     return round(home_wins / total, 2), round(away_wins / total, 2)
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -65,6 +68,7 @@ def index():
         selected_away=selected_away
     )
 
+
 @app.route("/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:
@@ -78,6 +82,28 @@ def upload():
         file.save(DATA_PATH)
 
     return redirect(url_for("index"))
+
+
+@app.route("/api/predict")
+def api_predict():
+    home = request.args.get("home")
+    away = request.args.get("away")
+
+    if not home or not away:
+        return jsonify({"error": "Missing home or away parameter"}), 400
+
+    df = pd.read_csv(DATA_PATH)
+    home_prob, away_prob = calculate_probabilities(df, home, away)
+
+    return jsonify({
+        "home": home,
+        "away": away,
+        "home_win_probability": home_prob,
+        "away_win_probability": away_prob,
+        "home_value": home_prob > 0.5,
+        "away_value": away_prob > 0.5
+    })
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
