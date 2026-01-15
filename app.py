@@ -8,7 +8,15 @@ CSV_PATH = "matches.csv"
 
 
 def load_matches():
-    return pd.read_csv(CSV_PATH)
+    df = pd.read_csv(CSV_PATH)
+
+    # priverstinai konvertuojam goals į skaičius
+    df["home_goals"] = pd.to_numeric(df["home_goals"], errors="coerce")
+    df["away_goals"] = pd.to_numeric(df["away_goals"], errors="coerce")
+
+    df = df.dropna()
+
+    return df
 
 
 def predict_match(home, away):
@@ -17,7 +25,7 @@ def predict_match(home, away):
     home_games = df[(df["home"] == home) | (df["away"] == home)]
     away_games = df[(df["home"] == away) | (df["away"] == away)]
 
-    if len(home_games) == 0 or len(away_games) == 0:
+    if home_games.empty or away_games.empty:
         return 0, 0, False, False
 
     def win_rate(team, games):
@@ -45,38 +53,11 @@ def index():
 
     result = None
     if request.method == "POST":
-        home = request.form["home"]
-        away = request.form["away"]
+        home = request.form.get("home")
+        away = request.form.get("away")
         result = predict_match(home, away)
 
     return render_template("index.html", teams=teams, result=result)
-
-
-@app.route("/stats")
-def stats():
-    df = load_matches()
-    teams = sorted(set(df["home"]).union(set(df["away"])))
-    data = []
-
-    for team in teams:
-        games = df[(df["home"] == team) | (df["away"] == team)]
-        wins = (
-            ((games["home"] == team) & (games["home_goals"] > games["away_goals"])) |
-            ((games["away"] == team) & (games["away_goals"] > games["home_goals"]))
-        ).sum()
-
-        goals = games.apply(
-            lambda r: r["home_goals"] if r["home"] == team else r["away_goals"],
-            axis=1
-        ).mean()
-
-        data.append({
-            "team": team,
-            "win_rate": round(wins / len(games) * 100, 1),
-            "avg_goals": round(goals, 2)
-        })
-
-    return render_template("stats.html", data=data)
 
 
 @app.route("/api/predict")
@@ -85,7 +66,7 @@ def api_predict():
     away = request.args.get("away")
 
     if not home or not away:
-        return jsonify({"error": "missing parameters"}), 400
+        return jsonify({"error": "Missing parameters"}), 400
 
     hp, ap, hv, av = predict_match(home, away)
 
