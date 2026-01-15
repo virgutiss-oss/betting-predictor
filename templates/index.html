@@ -3,16 +3,8 @@
 <head>
     <title>Betting Predictor</title>
     <style>
-        body {
-            background: #111;
-            color: white;
-            font-family: Arial;
-            padding: 20px;
-        }
-        select, button {
-            padding: 10px;
-            margin: 5px;
-        }
+        body { background: #111; color: white; font-family: Arial; padding: 20px; }
+        select, button { padding: 10px; margin: 5px; }
     </style>
 </head>
 <body>
@@ -20,19 +12,39 @@
 <h1>⚽ Betting Predictor</h1>
 
 <form method="POST">
+    <label>🏆 League</label><br>
+    <select name="league" onchange="this.form.submit()" required>
+        <option value="">Select league</option>
+        {% for league in leagues %}
+        <option value="{{ league }}"
+            {% if league == selected_league %}selected{% endif %}>
+            {{ league }}
+        </option>
+        {% endfor %}
+    </select>
+
+    {% if teams %}
+    <br><br>
+
+    <label>🏠 Home team</label><br>
     <select name="home" required>
-        {% for t in teams %}
-        <option value="{{ t }}">{{ t }}</option>
+        {% for team in teams %}
+        <option value="{{ team }}">{{ team }}</option>
         {% endfor %}
     </select>
 
+    <br><br>
+
+    <label>✈️ Away team</label><br>
     <select name="away" required>
-        {% for t in teams %}
-        <option value="{{ t }}">{{ t }}</option>
+        {% for team in teams %}
+        <option value="{{ team }}">{{ team }}</option>
         {% endfor %}
     </select>
 
+    <br><br>
     <button type="submit">Predict</button>
+    {% endif %}
 </form>
 
 {% if result %}
