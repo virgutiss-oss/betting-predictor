@@ -3,8 +3,16 @@
 <head>
     <title>Betting Predictor</title>
     <style>
-        body { background:#111; color:#fff; font-family:Arial; padding:20px; }
-        select, button { padding:10px; margin:5px; }
+        body {
+            background: #111;
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
@@ -12,13 +20,13 @@
 <h1>⚽ Betting Predictor</h1>
 
 <form method="POST">
-    <select name="home">
+    <select name="home" required>
         {% for t in teams %}
         <option value="{{ t }}">{{ t }}</option>
         {% endfor %}
     </select>
 
-    <select name="away">
+    <select name="away" required>
         {% for t in teams %}
         <option value="{{ t }}">{{ t }}</option>
         {% endfor %}
@@ -36,9 +44,6 @@
 {% endif %}
 
 <br>
-<a href="/stats" style="color:#0f0;">📊 View statistics</a>
-
-<br><br>
 <small>Powered by virgutiss-oss</small>
 
 </body>
