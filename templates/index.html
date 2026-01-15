@@ -1,86 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Betting Predictor</title>
-  <style>
-    body {
-      background: #0b1220;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 60px;
-    }
-    select, button {
-      padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      background: #1e90ff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .result {
-      margin-top: 30px;
-      font-size: 18px;
-    }
-  </style>
+    <title>Betting Predictor</title>
+    <style>
+        body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+        select, button { padding:10px; margin:5px; }
+    </style>
 </head>
 <body>
 
 <h1>⚽ Betting Predictor</h1>
 
-<select id="home">
-  {% for team in teams %}
-  <option value="{{ team }}">{{ team }}</option>
-  {% endfor %}
-</select>
+<form method="POST">
+    <select name="home">
+        {% for t in teams %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+    </select>
 
-<select id="away">
-  {% for team in teams %}
-  <option value="{{ team }}">{{ team }}</option>
-  {% endfor %}
-</select>
+    <select name="away">
+        {% for t in teams %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+    </select>
 
-<br>
-<button onclick="predict()">Predict</button>
-
-<div class="result" id="result"></div>
-
-<hr style="margin:40px">
-
-<h3>📁 Upload new matches.csv</h3>
-<form method="POST" action="/upload" enctype="multipart/form-data">
-  <input type="file" name="file">
-  <br><br>
-  <button type="submit">Upload CSV</button>
+    <button type="submit">Predict</button>
 </form>
 
-<p style="margin-top:40px">Powered by <b>virgutiss-oss</b></p>
+{% if result %}
+<hr>
+<p>🏠 Home win probability: {{ result[0] }}%</p>
+<p>✈️ Away win probability: {{ result[1] }}%</p>
+<p>💰 Home value: {{ result[2] }}</p>
+<p>💰 Away value: {{ result[3] }}</p>
+{% endif %}
 
-<script>
-function predict() {
-  const home = document.getElementById("home").value;
-  const away = document.getElementById("away").value;
+<br>
+<a href="/stats" style="color:#0f0;">📊 View statistics</a>
 
-  fetch(`/api/predict?home=${home}&away=${away}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("result").innerHTML = `
-        <p>🏠 Home win probability: <b>${(data.home_win_probability * 100).toFixed(1)}%</b></p>
-        <p>✈️ Away win probability: <b>${(data.away_win_probability * 100).toFixed(1)}%</b></p>
-        <p>💰 Home value: <b>${data.home_value}</b></p>
-        <p>💰 Away value: <b>${data.away_value}</b></p>
-      `;
-    })
-    .catch(err => {
-      document.getElementById("result").innerText = "Error loading prediction";
-    });
-}
-</script>
+<br><br>
+<small>Powered by virgutiss-oss</small>
 
 </body>
 </html>
