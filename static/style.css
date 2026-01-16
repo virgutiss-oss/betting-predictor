@@ -18,11 +18,4 @@ select, button {
     width: 100%;
     margin: 6px 0;
     padding: 8px;
-    border-radius: 6px;
-    border: none;
-}
-
-button {
-    background: #1f6feb;
-    color: white;
 }
