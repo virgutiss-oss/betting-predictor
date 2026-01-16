@@ -7,66 +7,72 @@ CSV_PATH = "matches.csv"
 
 def load_matches():
     df = pd.read_csv(CSV_PATH)
-    df["home_goals"] = pd.to_numeric(df["home_goals"], errors="coerce")
-    df["away_goals"] = pd.to_numeric(df["away_goals"], errors="coerce")
-    df = df.dropna()
+    df["home_goals"] = pd.to_numeric(df["home_goals"])
+    df["away_goals"] = pd.to_numeric(df["away_goals"])
     return df
 
-def get_leagues(df):
-    return sorted(df["league"].unique())
+def predict_probabilities(df, home, away):
+    games = df[(df["home"] == home) | (df["away"] == home)]
+    opp_games = df[(df["home"] == away) | (df["away"] == away)]
 
-def get_teams_by_league(df, league):
-    teams_home = df[df["league"] == league]["home"]
-    teams_away = df[df["league"] == league]["away"]
-    return sorted(set(teams_home) | set(teams_away))
+    if games.empty or opp_games.empty:
+        return 0.5, 0.5
 
-def predict_match(df, home, away):
-    home_games = df[(df["home"] == home) | (df["away"] == home)]
-    away_games = df[(df["home"] == away) | (df["away"] == away)]
-
-    if home_games.empty or away_games.empty:
-        return 0, 0, False, False
-
-    def win_rate(team, games):
+    def win_rate(team, data):
         wins = (
-            ((games["home"] == team) & (games["home_goals"] > games["away_goals"])) |
-            ((games["away"] == team) & (games["away_goals"] > games["home_goals"]))
+            ((data["home"] == team) & (data["home_goals"] > data["away_goals"])) |
+            ((data["away"] == team) & (data["away_goals"] > data["home_goals"]))
         ).sum()
-        return wins / len(games)
+        return wins / len(data)
 
-    home_prob = win_rate(home, home_games)
-    away_prob = win_rate(away, away_games)
+    return win_rate(home, games), win_rate(away, opp_games)
 
-    return (
-        round(home_prob * 100, 1),
-        round(away_prob * 100, 1),
-        home_prob > 0.5,
-        away_prob > 0.5
-    )
+def value_bet(prob, odds):
+    value = (prob * odds - 1) * 100
+    return round(value, 2), value > 0
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     df = load_matches()
-    leagues = get_leagues(df)
+    leagues = sorted(df["league"].unique())
 
-    selected_league = request.form.get("league")
-    teams = []
     result = None
+    teams = []
+    league = request.form.get("league")
 
-    if selected_league:
-        teams = get_teams_by_league(df, selected_league)
+    if league:
+        teams = sorted(set(
+            df[df["league"] == league]["home"]
+        ) | set(
+            df[df["league"] == league]["away"]
+        ))
 
     if request.method == "POST" and request.form.get("home"):
-        home = request.form.get("home")
-        away = request.form.get("away")
-        league_df = df[df["league"] == selected_league]
-        result = predict_match(league_df, home, away)
+        home = request.form["home"]
+        away = request.form["away"]
+        home_odds = float(request.form["home_odds"])
+        away_odds = float(request.form["away_odds"])
+
+        league_df = df[df["league"] == league]
+        hp, ap = predict_probabilities(league_df, home, away)
+
+        hv, h_ok = value_bet(hp, home_odds)
+        av, a_ok = value_bet(ap, away_odds)
+
+        result = {
+            "home_prob": round(hp * 100, 1),
+            "away_prob": round(ap * 100, 1),
+            "home_value": hv,
+            "away_value": av,
+            "home_ok": h_ok,
+            "away_ok": a_ok
+        }
 
     return render_template(
         "index.html",
         leagues=leagues,
         teams=teams,
-        selected_league=selected_league,
+        selected_league=league,
         result=result
     )
 
@@ -75,23 +81,23 @@ def api_predict():
     league = request.args.get("league")
     home = request.args.get("home")
     away = request.args.get("away")
-
-    if not league or not home or not away:
-        return jsonify({"error": "Missing parameters"}), 400
+    home_odds = float(request.args.get("home_odds"))
+    away_odds = float(request.args.get("away_odds"))
 
     df = load_matches()
     df = df[df["league"] == league]
 
-    hp, ap, hv, av = predict_match(df, home, away)
+    hp, ap = predict_probabilities(df, home, away)
+    hv, h_ok = value_bet(hp, home_odds)
+    av, a_ok = value_bet(ap, away_odds)
 
     return jsonify({
-        "league": league,
-        "home": home,
-        "away": away,
-        "home_prob": hp,
-        "away_prob": ap,
-        "home_value": hv,
-        "away_value": av
+        "home_prob": round(hp * 100, 1),
+        "away_prob": round(ap * 100, 1),
+        "home_value_percent": hv,
+        "away_value_percent": av,
+        "home_value": h_ok,
+        "away_value": a_ok
     })
 
 if __name__ == "__main__":
