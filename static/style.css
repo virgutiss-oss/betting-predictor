@@ -1,21 +1,20 @@
 body {
-    background: #0b1220;
+    background: #0f172a;
     color: white;
     font-family: Arial;
-    display: flex;
-    justify-content: center;
-    padding-top: 30px;
+    text-align: center;
 }
 
-.card {
-    background: #111c2f;
-    padding: 20px;
-    border-radius: 12px;
-    width: 320px;
+form {
+    margin: 20px auto;
 }
 
-select, button {
-    width: 100%;
-    margin: 6px 0;
-    padding: 8px;
+input, select, button {
+    padding: 10px;
+    margin: 5px;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 18px;
 }
