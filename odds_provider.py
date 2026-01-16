@@ -1,8 +1,6 @@
-import random
-
-def get_all_odds():
-    return [
-        {"book": "Pinnacle", "home": round(random.uniform(1.8, 2.4), 2), "away": round(random.uniform(1.8, 2.4), 2)},
-        {"book": "Betfair", "home": round(random.uniform(1.8, 2.4), 2), "away": round(random.uniform(1.8, 2.4), 2)},
-        {"book": "1xBet", "home": round(random.uniform(1.8, 2.4), 2), "away": round(random.uniform(1.8, 2.4), 2)}
-    ]
+def get_odds(sport):
+    if sport == "Tennis":
+        return {"home": 1.90, "away": 1.90}
+    if sport == "Basketball":
+        return {"home": 2.00, "away": 1.80}
+    return {"home": 2.10, "away": 1.85}
