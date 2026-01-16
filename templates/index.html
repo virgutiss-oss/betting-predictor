@@ -1,26 +1,65 @@
-<link rel="stylesheet" href="/static/style.css">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Betting Predictor</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 
 <div class="card">
-<h1>⚽ Betting Predictor</h1>
+<h2>🏆 Betting Predictor</h2>
 
-<form method="POST">
-    Home avg goals <input name="home_avg" required><br><br>
-    Away avg goals <input name="away_avg" required><br><br>
-    <button>Predict</button>
+<form method="post">
+
+<label>Sport</label>
+<select name="sport" onchange="this.form.submit()">
+<option value="">Select sport</option>
+{% for s in sports %}
+<option value="{{s}}" {% if s==sport %}selected{% endif %}>{{s}}</option>
+{% endfor %}
+</select>
+
+{% if sport %}
+<label>League</label>
+<select name="league" onchange="this.form.submit()">
+<option value="">Select league</option>
+{% for l in sports[sport] %}
+<option value="{{l}}" {% if l==league %}selected{% endif %}>{{l}}</option>
+{% endfor %}
+</select>
+{% endif %}
+
+{% if league %}
+<label>Home</label>
+<select name="home">
+{% for t in sports[sport][league] %}
+<option value="{{t}}">{{t}}</option>
+{% endfor %}
+</select>
+
+<label>Away</label>
+<select name="away">
+{% for t in sports[sport][league] %}
+<option value="{{t}}">{{t}}</option>
+{% endfor %}
+</select>
+
+<button type="submit">Predict</button>
+{% endif %}
+
 </form>
 
 {% if result %}
 <hr>
-<p>🏠 Home win: <b>{{ result.home_prob }}%</b></p>
-<p>✈️ Away win: <b>{{ result.away_prob }}%</b></p>
-
-{% if result.arb.exists %}
-<p class="good">⚡ Arbitrage FOUND ({{ result.arb.value }})</p>
-{% else %}
-<p class="bad">No arbitrage</p>
-{% endif %}
+<p>🏠 Home: {{result.p_home}}%</p>
+<p>✈️ Away: {{result.p_away}}%</p>
+<p>💰 Home value: {{result.value_home}}</p>
+<p>💰 Away value: {{result.value_away}}</p>
+<p>🔄 Arbitrage: {{result.arbitrage}}</p>
 {% endif %}
 
-<p><a href="/dashboard">📊 Dashboard</a></p>
-<p>Powered by virgutiss-oss</p>
+<footer>Powered by virgutiss-oss</footer>
 </div>
+
+</body>
+</html>
