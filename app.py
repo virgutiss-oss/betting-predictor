@@ -1,55 +1,64 @@
 from flask import Flask, render_template, request
-from data import SPORTS_DATA
-from ml_model import predict_prob_by_sport
-from odds_provider import get_odds
-from alerts import send_alert
-from live_matches import get_live_matches
-from roi_tracker import get_roi
+import pandas as pd
 
 app = Flask(__name__)
 
+SPORT_FILES = {
+    "football": "matches_football.csv",
+    "basketball": "matches_basketball.csv",
+    "tennis": "matches_tennis.csv",
+    "hockey": "matches_hockey.csv"
+}
+
+def load_data(sport):
+    return pd.read_csv(SPORT_FILES[sport])
+
+def predict_match(sport, home, away):
+    df = load_data(sport)
+
+    home_games = df[df["home"] == home]
+    away_games = df[df["away"] == away]
+
+    if len(home_games) == 0 or len(away_games) == 0:
+        return 0.5, 0.5
+
+    if sport == "football":
+        home_score = home_games["home_score"].mean()
+        away_score = away_games["away_score"].mean()
+
+    elif sport == "basketball":
+        home_score = home_games["home_points"].mean()
+        away_score = away_games["away_points"].mean()
+
+    elif sport == "hockey":
+        home_score = home_games["home_goals"].mean()
+        away_score = away_games["away_goals"].mean()
+
+    elif sport == "tennis":
+        home_score = home_games["home_win"].mean()
+        away_score = away_games["away_win"].mean()
+
+    total = home_score + away_score
+    home_prob = round(home_score / total, 2)
+    away_prob = round(away_score / total, 2)
+
+    return home_prob, away_prob
+
 @app.route("/", methods=["GET", "POST"])
 def index():
-    result = None
-    sport = request.form.get("sport")
-    league = request.form.get("league")
-    home = request.form.get("home")
-    away = request.form.get("away")
+    home_prob = away_prob = None
 
-    if request.method == "POST" and sport and home and away:
-        p_home, p_away = predict_prob_by_sport(sport)
-        odds = get_odds(sport, home, away)
-
-        value_home = (p_home * odds["home"] - 1) * 100
-        value_away = (p_away * odds["away"] - 1) * 100
-
-        if value_home > 5:
-            send_alert(f"VALUE BET: {home} {value_home}%")
-
-        result = {
-            "p_home": round(p_home * 100, 1),
-            "p_away": round(p_away * 100, 1),
-            "odds": odds,
-            "value_home": round(value_home, 2),
-            "value_away": round(value_away, 2)
-        }
+    if request.method == "POST":
+        sport = request.form["sport"]
+        home = request.form["home"]
+        away = request.form["away"]
+        home_prob, away_prob = predict_match(sport, home, away)
 
     return render_template(
         "index.html",
-        sports=SPORTS_DATA,
-        sport=sport,
-        league=league,
-        result=result
+        home_prob=home_prob,
+        away_prob=away_prob
     )
 
-@app.route("/dashboard")
-def dashboard():
-    stake, profit, roi = get_roi()
-    return render_template("dashboard.html", stake=stake, profit=profit, roi=roi)
-
-@app.route("/live")
-def live():
-    return render_template("live.html", matches=get_live_matches())
-
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=10000)
