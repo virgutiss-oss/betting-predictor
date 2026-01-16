@@ -48,18 +48,15 @@
 {% endif %}
 
 </form>
-
 {% if result %}
 <hr>
-<p>🏠 Home: {{result.p_home}}%</p>
-<p>✈️ Away: {{result.p_away}}%</p>
-<p>💰 Home value: {{result.value_home}}</p>
-<p>💰 Away value: {{result.value_away}}</p>
-<p>🔄 Arbitrage: {{result.arbitrage}}</p>
+<p>🏠 Home prob: {{result.p_home}}% (odds {{result.odds.home}})</p>
+<p>💰 Home value: {{result.value_home}}%</p>
+
+<p>✈️ Away prob: {{result.p_away}}% (odds {{result.odds.away}})</p>
+<p>💰 Away value: {{result.value_away}}%</p>
+
+<p>🔄 Arbitrage: {{result.arb}}</p>
+
+<a href="/dashboard">📊 Dashboard</a>
 {% endif %}
-
-<footer>Powered by virgutiss-oss</footer>
-</div>
-
-</body>
-</html>
