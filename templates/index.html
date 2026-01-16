@@ -5,24 +5,20 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
 <div class="card">
 <h2>🏆 Betting Predictor</h2>
 
 <form method="post">
-
-<label>Sport</label>
 <select name="sport" onchange="this.form.submit()">
-<option value="">Select sport</option>
+<option value="">Sport</option>
 {% for s in sports %}
 <option value="{{s}}" {% if s==sport %}selected{% endif %}>{{s}}</option>
 {% endfor %}
 </select>
 
 {% if sport %}
-<label>League</label>
 <select name="league" onchange="this.form.submit()">
-<option value="">Select league</option>
+<option value="">League</option>
 {% for l in sports[sport] %}
 <option value="{{l}}" {% if l==league %}selected{% endif %}>{{l}}</option>
 {% endfor %}
@@ -30,33 +26,33 @@
 {% endif %}
 
 {% if league %}
-<label>Home</label>
 <select name="home">
 {% for t in sports[sport][league] %}
-<option value="{{t}}">{{t}}</option>
+<option>{{t}}</option>
 {% endfor %}
 </select>
 
-<label>Away</label>
 <select name="away">
 {% for t in sports[sport][league] %}
-<option value="{{t}}">{{t}}</option>
+<option>{{t}}</option>
 {% endfor %}
 </select>
 
 <button type="submit">Predict</button>
 {% endif %}
-
 </form>
+
 {% if result %}
-<hr>
-<p>🏠 Home prob: {{result.p_home}}% (odds {{result.odds.home}})</p>
-<p>💰 Home value: {{result.value_home}}%</p>
-
-<p>✈️ Away prob: {{result.p_away}}% (odds {{result.odds.away}})</p>
-<p>💰 Away value: {{result.value_away}}%</p>
-
-<p>🔄 Arbitrage: {{result.arb}}</p>
-
-<a href="/dashboard">📊 Dashboard</a>
+<p>🏠 {{result.p_home}}% (odds {{result.odds.home}})</p>
+<p>💰 Value: {{result.value_home}}%</p>
+<p>✈️ {{result.p_away}}% (odds {{result.odds.away}})</p>
+<p>💰 Value: {{result.value_away}}%</p>
 {% endif %}
+
+<a href="/dashboard">📊 Dashboard</a><br>
+<a href="/live">📡 Live</a>
+
+<footer>Powered by virgutiss-oss</footer>
+</div>
+</body>
+</html>
