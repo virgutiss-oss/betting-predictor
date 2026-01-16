@@ -1,5 +1,5 @@
-league,date,home,away,home_goals,away_goals
-Premier League,2024-01-01,Arsenal,Chelsea,2,1
-Premier League,2024-01-05,Liverpool,Arsenal,1,1
-La Liga,2024-01-03,Barcelona,Real Madrid,2,2
-Serie A,2024-01-10,Inter,Juventus,1,0
+date,home,away,home_goals,away_goals
+2024-01-01,TeamA,TeamB,2,1
+2024-01-05,TeamA,TeamC,1,1
+2024-01-10,TeamB,TeamC,0,3
+2024-01-15,TeamC,TeamA,1,2
