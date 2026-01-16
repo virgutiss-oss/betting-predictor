@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🏆 Betting Predictor</title>
+    <title>Betting Predictor</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>🏆 Multi-Sport Betting Predictor</h1>
 
-    <form method="post">
-        <label>Sportas:</label>
-        <select name="sport">
-            <option value="football">⚽ Football</option>
-            <option value="basketball">🏀 Basketball</option>
-            <option value="tennis">🎾 Tennis</option>
-            <option value="hockey">🏒 Hockey</option>
-        </select>
+<h1>⚽ Betting Predictor</h1>
 
-        <input name="home" placeholder="Home team / Player" required>
-        <input name="away" placeholder="Away team / Player" required>
+<form method="POST">
+    <label>Sport:</label>
+    <select name="sport" required>
+        <option value="football">Football</option>
+        <option value="basketball">Basketball</option>
+        <option value="tennis">Tennis</option>
+        <option value="hockey">Hockey</option>
+    </select>
 
-        <button type="submit">Predict</button>
-    </form>
+    <br><br>
 
-    {% if home_prob %}
-    <div class="result">
-        <p>🏠 Home win probability: {{ home_prob * 100 }}%</p>
-        <p>✈️ Away win probability: {{ away_prob * 100 }}%</p>
-    </div>
-    {% endif %}
+    <input name="home" placeholder="Home team" required>
+    <input name="away" placeholder="Away team" required>
 
-    <footer>Powered by virgutiss-oss</footer>
+    <br><br>
+    <button type="submit">Predict</button>
+</form>
+
+{% if home_prob is not none %}
+<hr>
+<p>🏠 Home win probability: {{ home_prob * 100 }}%</p>
+<p>✈️ Away win probability: {{ away_prob * 100 }}%</p>
+{% endif %}
+
 </body>
 </html>
