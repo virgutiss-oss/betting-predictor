@@ -3,8 +3,10 @@
 <head>
     <title>Betting Predictor</title>
     <style>
-        body { background: #111; color: white; font-family: Arial; padding: 20px; }
-        select, button { padding: 10px; margin: 5px; }
+        body { background:#111; color:white; font-family:Arial; padding:20px; }
+        select, input, button { padding:10px; margin:5px; }
+        .value { color: #00ff88; }
+        .no-value { color: #ff5555; }
     </style>
 </head>
 <body>
@@ -12,50 +14,47 @@
 <h1>⚽ Betting Predictor</h1>
 
 <form method="POST">
-    <label>🏆 League</label><br>
     <select name="league" onchange="this.form.submit()" required>
         <option value="">Select league</option>
-        {% for league in leagues %}
-        <option value="{{ league }}"
-            {% if league == selected_league %}selected{% endif %}>
-            {{ league }}
-        </option>
+        {% for l in leagues %}
+        <option value="{{ l }}" {% if l==selected_league %}selected{% endif %}>{{ l }}</option>
         {% endfor %}
     </select>
 
     {% if teams %}
-    <br><br>
-
-    <label>🏠 Home team</label><br>
+    <br>
     <select name="home" required>
-        {% for team in teams %}
-        <option value="{{ team }}">{{ team }}</option>
-        {% endfor %}
+        {% for t in teams %}<option>{{ t }}</option>{% endfor %}
     </select>
 
-    <br><br>
-
-    <label>✈️ Away team</label><br>
     <select name="away" required>
-        {% for team in teams %}
-        <option value="{{ team }}">{{ team }}</option>
-        {% endfor %}
+        {% for t in teams %}<option>{{ t }}</option>{% endfor %}
     </select>
 
-    <br><br>
+    <br>
+    <input name="home_odds" placeholder="Home odds" step="0.01" type="number" required>
+    <input name="away_odds" placeholder="Away odds" step="0.01" type="number" required>
+
+    <br>
     <button type="submit">Predict</button>
     {% endif %}
 </form>
 
 {% if result %}
 <hr>
-<p>🏠 Home win probability: {{ result[0] }}%</p>
-<p>✈️ Away win probability: {{ result[1] }}%</p>
-<p>💰 Home value: {{ result[2] }}</p>
-<p>💰 Away value: {{ result[3] }}</p>
+<p>🏠 Home win probability: {{ result.home_prob }}%</p>
+<p>✈️ Away win probability: {{ result.away_prob }}%</p>
+
+<p class="{{ 'value' if result.home_ok else 'no-value' }}">
+Home value: {{ result.home_value }} %
+</p>
+
+<p class="{{ 'value' if result.away_ok else 'no-value' }}">
+Away value: {{ result.away_value }} %
+</p>
 {% endif %}
 
-<br>
+<hr>
 <small>Powered by virgutiss-oss</small>
 
 </body>
