@@ -1,31 +1,12 @@
 SPORTS_DATA = {
     "Football": {
-        "Premier League": [
-            "Arsenal", "Chelsea", "Liverpool", "Man City", "Man United"
-        ],
-        "La Liga": [
-            "Real Madrid", "Barcelona", "Atletico Madrid"
-        ],
-        "Serie A": [
-            "Inter", "AC Milan", "Juventus"
-        ]
+        "Premier League": ["Arsenal", "Chelsea", "Liverpool", "Man City"],
+        "La Liga": ["Real Madrid", "Barcelona", "Atletico Madrid"]
     },
-
     "Basketball": {
-        "NBA": [
-            "Lakers", "Warriors", "Celtics", "Bucks"
-        ],
-        "EuroLeague": [
-            "Real Madrid", "Olympiacos", "Fenerbahce"
-        ]
+        "NBA": ["Lakers", "Warriors", "Celtics", "Bucks"]
     },
-
     "Tennis": {
-        "ATP": [
-            "Djokovic", "Alcaraz", "Medvedev"
-        ],
-        "WTA": [
-            "Swiatek", "Sabalenka", "Gauff"
-        ]
+        "ATP": ["Djokovic", "Alcaraz", "Medvedev"]
     }
 }
