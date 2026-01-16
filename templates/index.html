@@ -4,9 +4,9 @@
     <title>Betting Predictor</title>
     <style>
         body { background:#111; color:white; font-family:Arial; padding:20px; }
-        select, input, button { padding:10px; margin:5px; }
-        .value { color: #00ff88; }
-        .no-value { color: #ff5555; }
+        select, button { padding:10px; margin:5px; }
+        .good { color:#00ff88; }
+        .bad { color:#ff5555; }
     </style>
 </head>
 <body>
@@ -22,20 +22,21 @@
     </select>
 
     {% if teams %}
-    <br>
+    <br><br>
+
     <select name="home" required>
-        {% for t in teams %}<option>{{ t }}</option>{% endfor %}
+        {% for t in teams %}
+        <option>{{ t }}</option>
+        {% endfor %}
     </select>
 
     <select name="away" required>
-        {% for t in teams %}<option>{{ t }}</option>{% endfor %}
+        {% for t in teams %}
+        <option>{{ t }}</option>
+        {% endfor %}
     </select>
 
-    <br>
-    <input name="home_odds" placeholder="Home odds" step="0.01" type="number" required>
-    <input name="away_odds" placeholder="Away odds" step="0.01" type="number" required>
-
-    <br>
+    <br><br>
     <button type="submit">Predict</button>
     {% endif %}
 </form>
@@ -45,11 +46,15 @@
 <p>🏠 Home win probability: {{ result.home_prob }}%</p>
 <p>✈️ Away win probability: {{ result.away_prob }}%</p>
 
-<p class="{{ 'value' if result.home_ok else 'no-value' }}">
+<p>📊 Odds source: {{ result.source }}</p>
+<p>🏠 Home odds: {{ result.home_odds }}</p>
+<p>✈️ Away odds: {{ result.away_odds }}</p>
+
+<p class="{{ 'good' if result.home_ok else 'bad' }}">
 Home value: {{ result.home_value }} %
 </p>
 
-<p class="{{ 'value' if result.away_ok else 'no-value' }}">
+<p class="{{ 'good' if result.away_ok else 'bad' }}">
 Away value: {{ result.away_value }} %
 </p>
 {% endif %}
