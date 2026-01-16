@@ -24,17 +24,8 @@
     {% if teams %}
     <br><br>
 
-    <select name="home" required>
-        {% for t in teams %}
-        <option>{{ t }}</option>
-        {% endfor %}
-    </select>
-
-    <select name="away" required>
-        {% for t in teams %}
-        <option>{{ t }}</option>
-        {% endfor %}
-    </select>
+    <select name="home">{% for t in teams %}<option>{{ t }}</option>{% endfor %}</select>
+    <select name="away">{% for t in teams %}<option>{{ t }}</option>{% endfor %}</select>
 
     <br><br>
     <button type="submit">Predict</button>
@@ -43,20 +34,22 @@
 
 {% if result %}
 <hr>
-<p>🏠 Home win probability: {{ result.home_prob }}%</p>
-<p>✈️ Away win probability: {{ result.away_prob }}%</p>
+<p>🏠 Home: {{ result.home_prob }}% | Odds {{ result.home_odds }}</p>
+<p>➗ Draw: {{ result.draw_prob }}% | Odds {{ result.draw_odds }}</p>
+<p>✈️ Away: {{ result.away_prob }}% | Odds {{ result.away_odds }}</p>
+
+<p class="{{ 'good' if result.home_ok else 'bad' }}">Home value: {{ result.home_value }}% | Kelly {{ result.home_kelly }}%</p>
+<p class="{{ 'good' if result.draw_ok else 'bad' }}">Draw value: {{ result.draw_value }}% | Kelly {{ result.draw_kelly }}%</p>
+<p class="{{ 'good' if result.away_ok else 'bad' }}">Away value: {{ result.away_value }}% | Kelly {{ result.away_kelly }}%</p>
+
+{% if result.arb_ok %}
+<p class="good">⚡ ARBITRAGE FOUND ({{ result.arb_value }})</p>
+{% else %}
+<p class="bad">No arbitrage ({{ result.arb_value }})</p>
+{% endif %}
 
 <p>📊 Odds source: {{ result.source }}</p>
-<p>🏠 Home odds: {{ result.home_odds }}</p>
-<p>✈️ Away odds: {{ result.away_odds }}</p>
-
-<p class="{{ 'good' if result.home_ok else 'bad' }}">
-Home value: {{ result.home_value }} %
-</p>
-
-<p class="{{ 'good' if result.away_ok else 'bad' }}">
-Away value: {{ result.away_value }} %
-</p>
+<p>⏱ Updated: {{ result.timestamp }}</p>
 {% endif %}
 
 <hr>
