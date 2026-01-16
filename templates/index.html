@@ -1,59 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Betting Predictor</title>
-    <style>
-        body { background:#111; color:white; font-family:Arial; padding:20px; }
-        select, button { padding:10px; margin:5px; }
-        .good { color:#00ff88; }
-        .bad { color:#ff5555; }
-    </style>
-</head>
-<body>
+<link rel="stylesheet" href="/static/style.css">
 
+<div class="card">
 <h1>⚽ Betting Predictor</h1>
 
 <form method="POST">
-    <select name="league" onchange="this.form.submit()" required>
-        <option value="">Select league</option>
-        {% for l in leagues %}
-        <option value="{{ l }}" {% if l==selected_league %}selected{% endif %}>{{ l }}</option>
-        {% endfor %}
-    </select>
-
-    {% if teams %}
-    <br><br>
-
-    <select name="home">{% for t in teams %}<option>{{ t }}</option>{% endfor %}</select>
-    <select name="away">{% for t in teams %}<option>{{ t }}</option>{% endfor %}</select>
-
-    <br><br>
-    <button type="submit">Predict</button>
-    {% endif %}
+    Home avg goals <input name="home_avg" required><br><br>
+    Away avg goals <input name="away_avg" required><br><br>
+    <button>Predict</button>
 </form>
 
 {% if result %}
 <hr>
-<p>🏠 Home: {{ result.home_prob }}% | Odds {{ result.home_odds }}</p>
-<p>➗ Draw: {{ result.draw_prob }}% | Odds {{ result.draw_odds }}</p>
-<p>✈️ Away: {{ result.away_prob }}% | Odds {{ result.away_odds }}</p>
+<p>🏠 Home win: <b>{{ result.home_prob }}%</b></p>
+<p>✈️ Away win: <b>{{ result.away_prob }}%</b></p>
 
-<p class="{{ 'good' if result.home_ok else 'bad' }}">Home value: {{ result.home_value }}% | Kelly {{ result.home_kelly }}%</p>
-<p class="{{ 'good' if result.draw_ok else 'bad' }}">Draw value: {{ result.draw_value }}% | Kelly {{ result.draw_kelly }}%</p>
-<p class="{{ 'good' if result.away_ok else 'bad' }}">Away value: {{ result.away_value }}% | Kelly {{ result.away_kelly }}%</p>
-
-{% if result.arb_ok %}
-<p class="good">⚡ ARBITRAGE FOUND ({{ result.arb_value }})</p>
+{% if result.arb.exists %}
+<p class="good">⚡ Arbitrage FOUND ({{ result.arb.value }})</p>
 {% else %}
-<p class="bad">No arbitrage ({{ result.arb_value }})</p>
+<p class="bad">No arbitrage</p>
+{% endif %}
 {% endif %}
 
-<p>📊 Odds source: {{ result.source }}</p>
-<p>⏱ Updated: {{ result.timestamp }}</p>
-{% endif %}
-
-<hr>
-<small>Powered by virgutiss-oss</small>
-
-</body>
-</html>
+<p><a href="/dashboard">📊 Dashboard</a></p>
+<p>Powered by virgutiss-oss</p>
+</div>
