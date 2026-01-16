@@ -1,40 +1,39 @@
 from flask import Flask, render_template, request
-import pandas as pd
-
-from ml_model import train_model, predict_home_win
-from odds_provider import get_all_odds
-from arbitrage import find_arbitrage
-from roi_tracker import get_roi
+from data import SPORTS_DATA
+from ml_model import predict_prob
+from odds_provider import get_odds
+from arbitrage import check_arbitrage
 
 app = Flask(__name__)
-
-model = train_model()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     result = None
 
-    if request.method == "POST":
-        home_avg = float(request.form["home_avg"])
-        away_avg = float(request.form["away_avg"])
+    sport = request.form.get("sport")
+    league = request.form.get("league")
+    home = request.form.get("home")
+    away = request.form.get("away")
 
-        home_prob = predict_home_win(model, home_avg, away_avg)
-        away_prob = 1 - home_prob
-
-        odds = get_all_odds()
-        arb = find_arbitrage(odds)
+    if request.method == "POST" and home and away:
+        p_home, p_away = predict_prob(1, 1)
+        odds = get_odds(sport)
 
         result = {
-            "home_prob": round(home_prob * 100, 2),
-            "away_prob": round(away_prob * 100, 2),
-            "arb": arb
+            "p_home": round(p_home * 100, 1),
+            "p_away": round(p_away * 100, 1),
+            "value_home": (p_home * odds["home"]) > 1,
+            "value_away": (p_away * odds["away"]) > 1,
+            "arbitrage": check_arbitrage(odds["home"], odds["away"])
         }
 
-    return render_template("index.html", result=result)
-
-@app.route("/dashboard")
-def dashboard():
-    return render_template("dashboard.html", roi=get_roi())
+    return render_template(
+        "index.html",
+        sports=SPORTS_DATA,
+        sport=sport,
+        league=league,
+        result=result
+    )
 
 if __name__ == "__main__":
     app.run()
